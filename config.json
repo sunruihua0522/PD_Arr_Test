@@ -1,0 +1,21 @@
+{
+  "GPIBBoardNumber": 0,
+  "MaxChannel": 4,
+  "GPIBKeithley2400": [
+    11,
+    24,
+    17,
+    23
+  ],
+  "GPIBKeysight8164B": 20,
+  "SweepStart": 1260,
+  "SweepStep": 0.1,
+  "SweepEnd": 1350,
+  "OpticalPower": 2,
+  "ITU":[
+  	1271,
+  	1291,
+  	1311,
+  	1331
+  ]
+}

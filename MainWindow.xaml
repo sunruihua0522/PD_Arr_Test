@@ -1,0 +1,160 @@
+﻿<Window x:Class="PLC_Test_PD_Array.MainWindow" 
+        mc:Ignorable="d" Title="PLC Test based on PD Array" 
+        Height="800" 
+        Width="800" 
+        WindowStartupLocation="CenterScreen" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:UserControls="clr-namespace:PLC_Test_PD_Array.UserControls" 
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
+    xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:local="clr-namespace:PLC_Test_PD_Array" 
+    xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol" 
+    xmlns:dxprg="http://schemas.devexpress.com/winfx/2008/xaml/propertygrid" 
+    xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors" 
+    xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts" 
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
+    xmlns:Converters="clr-namespace:PLC_Test_PD_Array.Converters"
+        dx:ThemeManager.Theme="Office2016White" FontFamily="Global User Interface" Icon="Icons/arrow-fiber.ico" WindowState="Maximized">
+    <Window.Resources>
+        <Converters:ConvSystemStatusToVisibility x:Key="ConvSystemStatusToVisibility"/>
+        <Converters:ConvSystemStatusToButtonEnable x:Key="ConvSystemStatusToButtonEnable" />
+        <sys:Int32 x:Key="CH1">0</sys:Int32>
+        <sys:Int32 x:Key="CH2">1</sys:Int32>
+        <sys:Int32 x:Key="CH3">2</sys:Int32>
+        <sys:Int32 x:Key="CH4">3</sys:Int32>
+        <dxc:LineStyle x:Key="StyleReferenceCurve">
+            <dxc:LineStyle.DashStyle>
+                <DashStyle Dashes="1 2"/>
+            </dxc:LineStyle.DashStyle>
+        </dxc:LineStyle>
+    </Window.Resources>
+    <Window.DataContext>
+        <StaticResource ResourceKey="locator" />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="45" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <dxb:ToolBarControl UseWholeRow="True">
+           <!--
+            <dxb:BarButtonItem IsEnabled="{Binding Main.Status, ConverterParameter=normal, Converter={StaticResource ConvSystemStatusToButtonEnable}, Mode=OneWay}" Content="Find Instruments" LargeGlyph="Icons/search-32.png" BarItemDisplayMode="ContentAndGlyph" Command="{Binding Main.FindInstruments}" />
+            <dxb:BarItemSeparator />
+            -->
+            <dxb:BarButtonItem IsEnabled="{Binding Main.Status, ConverterParameter=normal, Converter={StaticResource ConvSystemStatusToButtonEnable}, Mode=OneWay}" Content="Reference Sweep" BarItemDisplayMode="ContentAndGlyph" LargeGlyph="Icons/CurveGroup_32_02.png" Command="{Binding Main.SweepReference}"/>
+            <dxb:BarButtonItem IsEnabled="{Binding Main.Status, ConverterParameter=normal, Converter={StaticResource ConvSystemStatusToButtonEnable}, Mode=OneWay}" Content="PLC Sweep" BarItemDisplayMode="ContentAndGlyph" LargeGlyph="Icons/CurveGroup_32_01.png" Command="{Binding Main.SweepThroughPLC}"/>
+            <dxb:BarButtonItem Content="Stop" BarItemDisplayMode="ContentAndGlyph" Command="{Binding Main.StopSweeping}" LargeGlyph="Icons/d86344-stop-32.png" />
+            <dxb:BarButtonItem Content="Export" ToolTip="Export the test results to .csv file" Alignment="Far" LargeGlyph="Icons/csv-file-32-1.png" Command="{Binding Main.SaveTestResult}"/>
+        </dxb:ToolBarControl>
+        <dxlc:LayoutControl Padding="5" Grid.Row="1" Background="{x:Null}">
+            <dxlc:LayoutGroup Width="250" dxlc:LayoutControl.AllowHorizontalSizing="True" >
+                <dxprg:PropertyGridControl ReadOnly="{Binding Main.Status, ConverterParameter=reverse, Converter={StaticResource ConvSystemStatusToButtonEnable}, Mode=OneWay}" SelectedObject="{Binding Main.Controller.Config}" />
+            </dxlc:LayoutGroup>
+            <dxlc:LayoutGroup Orientation="Vertical">
+                <dxlc:LayoutGroup View="Tabs">
+                    <dxlc:LayoutGroup Header="Insertion Loss" Padding="-10">
+                        <dxc:ChartControl BorderBrush="{x:Null}" BorderThickness="0">
+                            <dxc:ChartControl.Palette>
+                                <dxc:NatureColorsPalette/>
+                            </dxc:ChartControl.Palette>
+                            <dxc:ChartControl.CrosshairOptions>
+                                <dxc:CrosshairOptions ShowGroupHeaders="False" />
+                            </dxc:ChartControl.CrosshairOptions>
+                            <dxc:ChartControl.Legend>
+                                <dxc:Legend Background="{x:Null}" BorderThickness="0" HorizontalPosition="Right" Orientation="Horizontal" FontSize="12" Visible="True"/>
+                            </dxc:ChartControl.Legend>
+                            <dxc:XYDiagram2D>
+                                <dxc:XYDiagram2D.AxisX>
+                                    <dxc:AxisX2D>
+                                        <dxc:AxisX2D.Label>
+                                            <dxc:AxisLabel TextPattern="{}{A:F3}nm"/>
+                                        </dxc:AxisX2D.Label>
+                                    </dxc:AxisX2D>
+                                </dxc:XYDiagram2D.AxisX>
+                                <dxc:XYDiagram2D.AxisY>
+                                    <dxc:AxisY2D GridLinesVisible="True" Logarithmic="True">
+                                        <dxc:AxisY2D.WholeRange>
+                                            <dxc:Range dxc:AxisY2D.AlwaysShowZeroLevel="False" />
+                                        </dxc:AxisY2D.WholeRange>
+                                        <dxc:AxisY2D.Label>
+                                            <dxc:AxisLabel TextPattern="{}{V:F2}dB"/>
+                                        </dxc:AxisY2D.Label>
+                                        <dxc:AxisY2D.Title>
+                                            <dxc:AxisTitle Content="Insertion Loss" FontSize="12"/>
+                                        </dxc:AxisY2D.Title>
+                                    </dxc:AxisY2D>
+                                </dxc:XYDiagram2D.AxisY>
+                                <dxc:LineSeries2D DisplayName="CH 1" DataSource="{Binding Main.Controller.PLC.Channels[0].CurveInsertionLoss}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F2}dB"/>
+                                <dxc:LineSeries2D DisplayName="CH 2" DataSource="{Binding Main.Controller.PLC.Channels[1].CurveInsertionLoss}" ValueDataMember="Y" ArgumentDataMember="X" CrosshairLabelPattern="{}{A:F3}nm, {V:F2}dB"/>
+                                <dxc:LineSeries2D DisplayName="CH 3" DataSource="{Binding Main.Controller.PLC.Channels[2].CurveInsertionLoss}" ValueDataMember="Y" ArgumentDataMember="X" CrosshairLabelPattern="{}{A:F3}nm, {V:F2}dB"/>
+                                <dxc:LineSeries2D DisplayName="CH 4" DataSource="{Binding Main.Controller.PLC.Channels[3].CurveInsertionLoss}" ValueDataMember="Y" ArgumentDataMember="X" CrosshairLabelPattern="{}{A:F3}nm, {V:F2}dB"/>
+                            </dxc:XYDiagram2D>
+                        </dxc:ChartControl>
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutGroup Header="Raw" Padding="-10">
+                        <dxc:ChartControl BorderBrush="{x:Null}" BorderThickness="0">
+                            <dxc:ChartControl.Palette>
+                                <dxc:CustomPalette>
+                                    <dxc:CustomPalette.Colors>
+                                        <Color>#FF367FFF</Color>
+                                        <Color>#FFFF5E5E</Color>
+                                        <Color>#FF367FFF</Color>
+                                        <Color>#FFFF5E5E</Color>
+                                        <Color>#FF367FFF</Color>
+                                        <Color>#FFFF5E5E</Color>
+                                    </dxc:CustomPalette.Colors>
+                                </dxc:CustomPalette>
+                            </dxc:ChartControl.Palette>
+                            <dxc:ChartControl.CrosshairOptions>
+                                <dxc:CrosshairOptions ShowGroupHeaders="False"/>
+                            </dxc:ChartControl.CrosshairOptions>
+                            <dxc:ChartControl.Legend>
+                                <dxc:Legend Background="{x:Null}" BorderThickness="0" HorizontalPosition="Right" Orientation="Horizontal" FontSize="12" Visible="True"/>
+                            </dxc:ChartControl.Legend>
+                            <dxc:XYDiagram2D>
+                                <dxc:XYDiagram2D.Panes>
+                                    <dxc:Pane x:Name="paneCH2"/>
+                                    <dxc:Pane x:Name="paneCH3"/>
+                                    <dxc:Pane x:Name="paneCH4"/>
+                                </dxc:XYDiagram2D.Panes>
+                                <dxc:XYDiagram2D.AxisX>
+                                    <dxc:AxisX2D>
+                                        <dxc:AxisX2D.Label>
+                                            <dxc:AxisLabel TextPattern="{}{A:F3}nm"/>
+                                        </dxc:AxisX2D.Label>
+                                    </dxc:AxisX2D>
+                                </dxc:XYDiagram2D.AxisX>
+                                <dxc:XYDiagram2D.AxisY>
+                                    <dxc:AxisY2D>
+                                        <dxc:AxisY2D.Label>
+                                            <dxc:AxisLabel TextPattern="{}{V:F4}mA"/>
+                                        </dxc:AxisY2D.Label>
+                                        <dxc:AxisY2D.Title>
+                                            <dxc:AxisTitle Content="Optical Current" FontSize="12"/>
+                                        </dxc:AxisY2D.Title>
+                                    </dxc:AxisY2D>
+                                </dxc:XYDiagram2D.AxisY>
+                                <dxc:LineSeries2D DisplayName="Ref 1" DataSource="{Binding Main.Controller.PLC.Channels[0].CurveReference}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" LineStyle="{StaticResource StyleReferenceCurve}"/>
+                                <dxc:LineSeries2D DisplayName="PLC 1" DataSource="{Binding Main.Controller.PLC.Channels[0].CurveThroughPLC}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" />
+                                <dxc:LineSeries2D DisplayName="Ref 2" DataSource="{Binding Main.Controller.PLC.Channels[1].CurveReference}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=paneCH2}" LineStyle="{StaticResource StyleReferenceCurve}"/>
+                                <dxc:LineSeries2D DisplayName="PLC 2" DataSource="{Binding Main.Controller.PLC.Channels[1].CurveThroughPLC}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=paneCH2}"/>
+                                <dxc:LineSeries2D DisplayName="Ref 3" DataSource="{Binding Main.Controller.PLC.Channels[2].CurveReference}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=paneCH3}" LineStyle="{StaticResource StyleReferenceCurve}"/>
+                                <dxc:LineSeries2D DisplayName="PLC 3" DataSource="{Binding Main.Controller.PLC.Channels[2].CurveThroughPLC}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=paneCH3}"/>
+                                <dxc:LineSeries2D DisplayName="Ref 4" DataSource="{Binding Main.Controller.PLC.Channels[3].CurveReference}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=paneCH4}" LineStyle="{StaticResource StyleReferenceCurve}"/>
+                                <dxc:LineSeries2D DisplayName="PLC 4" DataSource="{Binding Main.Controller.PLC.Channels[3].CurveThroughPLC}" ValueDataMember="Y" ArgumentDataMember="X"  CrosshairLabelPattern="{}{A:F3}nm, {V:F7}mA" dxc:XYDiagram2D.SeriesPane="{Binding ElementName=paneCH4}"/>
+                            </dxc:XYDiagram2D>
+                        </dxc:ChartControl>
+                    </dxlc:LayoutGroup>
+                </dxlc:LayoutGroup>
+                <dxlc:LayoutGroup Height="100" dxlc:LayoutControl.AllowVerticalSizing="True" Orientation="Vertical">
+                    <UserControls:AutoScrollingListBox ItemsSource="{Binding Main.Messages}" />
+                    <ProgressBar Height="10" Value="{Binding Main.SweepingProgress}" Minimum="0" Maximum="1" BorderBrush="{x:Null}" Background="{x:Null}" Visibility="{Binding Main.Status, Converter={StaticResource ConvSystemStatusToVisibility}, Mode=OneWay}"/>
+                </dxlc:LayoutGroup>
+            </dxlc:LayoutGroup>
+        </dxlc:LayoutControl>
+    </Grid>
+</Window>
