@@ -555,23 +555,18 @@ namespace PLC_Test_PD_Array
         public Task StartSweepReference()
         {
             PLC.ClearReferenceData();
-
 #if FAKE_REF
-
             for(var lambda = Config.SweepStart; lambda <= Config.SweepEnd; lambda += Config.SweepStep)
             {
                 lambda = Math.Round(lambda, 3);
                 this.PLC.AddReferenceData(lambda, new List<double>(new double[] { 1.6, 1.6, 1.6, 1.6 }));      
             }
-
             return Task.Run(() => { });
 #else
-
             return SweepAsync((lambda, list) =>
             {
 #if !FAKE_ME
                 this.PLC.AddReferenceData(lambda, list);
-
 #else
                 this.PLC.AddReferenceData(lambda, new List<double>(new double[] { 4, 4, 4, 4 }));
 #endif
@@ -595,7 +590,6 @@ namespace PLC_Test_PD_Array
             {
                 this.PLC.AddTestedData(lambda, list);
             });
-
 #else
 
             FakeDataGenerator.ReadRawData("fakedata.csv", out List<Point> data1, out List<Point> data2, out List<Point> data3, out List<Point> data4);
