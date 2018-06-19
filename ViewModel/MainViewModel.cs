@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Windows;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -71,6 +73,14 @@ namespace PLC_Test_PD_Array.ViewModel
         private void Controller_OnSweepingProgressChanged(object sender, double e)
         {
             this.SweepingProgress = e;
+            if (e == 1)
+            {
+                System.ComponentModel.ICollectionView col= Controller.PLC.Channels[0].CurveInsertionLoss;
+                foreach (var it in Controller.PLC.Channels[0].InsertionLoss)
+                {
+                    Console.WriteLine(string.Format("{0:F3}      {1:F3}",it.X,it.Y));
+                }
+            }
         }
 
         #endregion

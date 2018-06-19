@@ -97,6 +97,8 @@ namespace PLC_Test_PD_Array
                 // reset the cancellation token source
                 ctsSweep = new CancellationTokenSource();
 
+              
+
                 await Task.Run(() =>
                 {
                     // set the optical power
@@ -107,8 +109,10 @@ namespace PLC_Test_PD_Array
                     if (TunableLaser.GetOutput() == false)
                         throw new Exception("Unable to turn on the laser.");
 
+              
                     for (int i = 0; i < Config.MaxChannel; i++)
                     {
+
                         SourceMeter[i].SetDataElement(Keithley2400.EnumDataStringElements.CURR);
                         SourceMeter[i].SetMeasurementFunc(Keithley2400.EnumMeasFunc.ONCURR);
                         SourceMeter[i].SetSourceMode(Keithley2400.EnumSourceMode.VOLT);
@@ -116,7 +120,6 @@ namespace PLC_Test_PD_Array
                         // SourceMeter.SetMeasRangeOfAmps(Keithley2400.EnumMeasRangeAmps.R1MA);
                         SourceMeter[i].SetMeasRangeOfAmps(Keithley2400.EnumMeasRangeAmps.R1MA);
                         SourceMeter[i].SetVoltageSourceLevel(0);
-
                         SourceMeter[i].SetOutputState(true);
                         Thread.Sleep(100);
                         SourceMeter[i].GetMeasuredData(Keithley2400.EnumDataStringElements.CURR);
@@ -138,17 +141,17 @@ namespace PLC_Test_PD_Array
                         //TODO Add data fetching process here
                         TunableLaser.SetWavelenght(lambda);
 
-                        Thread.Sleep(20);
+                        Thread.Sleep(30);
+
 
                         List<double> intensityList = new List<double>();
-
+                        
                         for (int i = 0; i < Config.MaxChannel; i++)
                         {
 
                             var intensity = SourceMeter[i].GetMeasuredData(Keithley2400.EnumDataStringElements.CURR).Current;
                             intensity *= 1000; // convert A to mA
-
-                            intensityList.Add(intensity);
+                            intensityList.Add(Math.Abs(intensity));
                         }
 
                         // add the point to collection on UI thread
@@ -160,16 +163,14 @@ namespace PLC_Test_PD_Array
                         // calculate the progress in percent
                         var prog = (lambda - Config.SweepStart) / (Config.SweepEnd - Config.SweepStart);
                         progressChanged.Report(prog);
-
+           
 
                         // check if the task should be canceled
                         if (ctsSweep.Token.IsCancellationRequested)
                         {
                             ProgressMessageUpdate.Report("The sweeping process was canceled.");
                             throw new OperationCanceledException("The sweeping process was canceled by user.");
-                        }
-
-                        //Thread.Sleep(10);
+                        }            
                     }
                 });
             }
@@ -559,7 +560,8 @@ namespace PLC_Test_PD_Array
             for(var lambda = Config.SweepStart; lambda <= Config.SweepEnd; lambda += Config.SweepStep)
             {
                 lambda = Math.Round(lambda, 3);
-                this.PLC.AddReferenceData(lambda, new List<double>(new double[] { 1.6, 1.6, 1.6, 1.6 }));      
+                //this.PLC.AddReferenceData(lambda, new List<double>(new double[] { 1.6, 1.6, 1.6, 1.6 })); 
+                this.PLC.AddReferenceData(lambda, new List<double>(new double[] { 0.1, 0.1, 0.1, 0.1 }));
             }
             return Task.Run(() => { });
 #else
@@ -593,10 +595,11 @@ namespace PLC_Test_PD_Array
 #else
 
             FakeDataGenerator.ReadRawData("fakedata.csv", out List<Point> data1, out List<Point> data2, out List<Point> data3, out List<Point> data4);
-            this.PLC.Channels[0].InsertionLoss.AddRange(data1);
-            this.PLC.Channels[1].InsertionLoss.AddRange(data2);
-            this.PLC.Channels[2].InsertionLoss.AddRange(data3);
-            this.PLC.Channels[3].InsertionLoss.AddRange(data4);
+                this.PLC.Channels[0].InsertionLoss.AddRange(data1);
+                this.PLC.Channels[1].InsertionLoss.AddRange(data2);
+                this.PLC.Channels[2].InsertionLoss.AddRange(data3);
+                this.PLC.Channels[3].InsertionLoss.AddRange(data4);
+        
 
             return Task.Run(() => { });
 

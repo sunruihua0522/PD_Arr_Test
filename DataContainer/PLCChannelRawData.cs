@@ -72,7 +72,7 @@ namespace PLC_Test_PD_Array.DataContainer
                 else
                 {
                     // get the point with minimum IL
-                    var point = InsertionLoss.First(a => a.Y == InsertionLoss.Max(b => b.Y));
+                    var point = InsertionLoss.First(a => a.Y == InsertionLoss.Min(b => b.Y));
 
                     // get the points close to the point with minimum IL 
                     var adjacent = CalPassBand(point.X, 1);
@@ -104,7 +104,8 @@ namespace PLC_Test_PD_Array.DataContainer
                 else
                 {
                     // select the points with point.x locates between ITU - 6.5nm, and ITU + 6.5nm
-                    var points = CalLossMinMaxInRange(ITU, 6.5, 6.5);
+                    //var points = CalLossMinMaxInRange(ITU, 6.5, 6.5);
+                    var points = CalLossMinMaxInRange(ITU, 1, 1);
                     return points.Item1;
                 }
             }
@@ -123,7 +124,8 @@ namespace PLC_Test_PD_Array.DataContainer
                 else
                 {
                     // select the points with point.x locates between ITU - 6.5nm, and ITU + 6.5nm
-                    var points = CalLossMinMaxInRange(ITU, 6.5, 6.5);
+                    //var points = CalLossMinMaxInRange(ITU, 6.5, 6.5);
+                    var points = CalLossMinMaxInRange(ITU, 1, 1);
                     return points.Item2;
                 }
             }
@@ -177,7 +179,8 @@ namespace PLC_Test_PD_Array.DataContainer
                     return new Point(double.NaN, double.NaN);
                 else
                 {
-                    var points = CalLossMinMaxInRange(Parent.Channels[adjacentCH].ITU, 6.5, 6.5);
+                    //var points = CalLossMinMaxInRange(Parent.Channels[adjacentCH].ITU, 6.5, 6.5);
+                    var points = CalLossMinMaxInRange(Parent.Channels[adjacentCH].ITU, 1, 1);
                     return points.Item1;
                 }
             }
@@ -196,7 +199,8 @@ namespace PLC_Test_PD_Array.DataContainer
                     return new Point(double.NaN, double.NaN);
                 else
                 {
-                    var points = CalLossMinMaxInRange(Parent.Channels[adjacentCH].ITU, 6.5, 6.5);
+                    //var points = CalLossMinMaxInRange(Parent.Channels[adjacentCH].ITU, 6.5, 6.5);
+                    var points = CalLossMinMaxInRange(Parent.Channels[adjacentCH].ITU, 1, 1);
                     return points.Item1;
                 }
             }
@@ -215,7 +219,8 @@ namespace PLC_Test_PD_Array.DataContainer
                 {
                     if(i < this.Channel - 1 || i > this.Channel + 1)
                     {
-                        var loss = CalLossMinMaxInRange(Parent.Channels[i].ITU, 6.5, 6.5).Item1.Y;
+                        //var loss = CalLossMinMaxInRange(Parent.Channels[i].ITU, 6.5, 6.5).Item1.Y;
+                        var loss = CalLossMinMaxInRange(Parent.Channels[i].ITU, 1, 1).Item1.Y;
                         loss = Math.Pow(10, loss / 10);
                         lossSum += loss;
                     }
@@ -255,20 +260,22 @@ namespace PLC_Test_PD_Array.DataContainer
             var pointRef = FindPointByWavelength(CentralWavelength);
 
             // the IL used to calculate passband
-            var targeIL = pointRef.Y - DropdB;
+            var targeIL = pointRef.Y + DropdB;
 
             // get the points before the ITU
             var pointsBeforeITU = InsertionLoss.Reverse().SkipWhile(p => p.X > pointRef.X);
 
             // get the point locates at the left side of the ITU
-            var pointLeftITU = pointsBeforeITU.SkipWhile(p => p.Y > targeIL).First();
+            var pointLeftITU = pointsBeforeITU.SkipWhile(p => p.Y < targeIL).First();
 
             // get the points after the ITU
             var pointsAfterITU = InsertionLoss.SkipWhile(p => p.X < pointRef.X);
 
             // get the point locates at the right side of the ITU
-            var pointRightITU = pointsAfterITU.SkipWhile(p => p.Y > targeIL).First();
+            var pointRightITU = pointsAfterITU.Reverse().SkipWhile(p => p.Y > targeIL).First();
 
+            
+            
             return new Tuple<Point, Point, double>(pointLeftITU, pointRightITU, pointRightITU.X - pointLeftITU.X);
         }
 
@@ -334,9 +341,9 @@ namespace PLC_Test_PD_Array.DataContainer
             {
                 this.ThroughPLC.Add(new Point(Wavelength, Math.Abs(Intensity)));
                 // Convert to dB
-                double il = 10.0 * Math.Log10(Math.Abs(Intensity) / intensityRef);
-                if (il < -40)
-                    il = -40;
+                double il = -10.0 * Math.Log10(Math.Abs(Intensity) / intensityRef);
+                if (il >40)
+                    il = 40;
 
                 this.InsertionLoss.Add(new Point(Wavelength, il));
             }
